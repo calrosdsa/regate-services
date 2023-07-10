@@ -1,66 +1,82 @@
 package main
 
 import (
+	"context"
+	"google.golang.org/api/option"
+	"notification/core"
+
 	// "net"
 	// "strconv"
+	"database/sql"
+	firebase "firebase.google.com/go"
+	"firebase.google.com/go/messaging"
+	"fmt"
 
 	"log"
-	// "time"
-	// "fmt"
-	"context"
+	"path/filepath"
+	"time"
 
-	"github.com/segmentio/kafka-go"
+	_ "github.com/lib/pq"
+	"github.com/spf13/viper"
 )
 
-func main() {
-// to create topics when auto.create.topics.enable='false'
-	// topic := "my-topic"
-	// partition := 0
-
-	// conn, err := kafka.DialLeader(context.Background(), "tcp", "localhost:9094", topic, partition)
-	// if err != nil {
-	// 	log.Fatal("failed to dial leader:", err)
-	// }
-
-	// conn.SetWriteDeadline(time.Now().Add(10*time.Second))
-	// _, err = conn.WriteMessages(
-	// 	kafka.Message{Value: []byte("one!")},
-	// 	kafka.Message{Value: []byte("two!")},
-	// 	kafka.Message{Value: []byte("three!")},
-	// )
-	// if err != nil {
-	// 	log.Fatal("failed to write messages:", err)
-	// }
-
-	// if err := conn.Close(); err != nil {
-	// 	log.Fatal("failed to close writer:", err)
-	// }
-	// make a writer that produces to topic-A, using the least-bytes distribution
-	w := &kafka.Writer{
-		Addr:     kafka.TCP("localhost:9094"),
-		Topic:   "notification-message-group",
-		Balancer: &kafka.LeastBytes{},
-	}
-
-	err := w.WriteMessages(context.Background(),
-		kafka.Message{
-			Key:   []byte("KEY"),
-			Value: []byte("NEW MESSAGE"),
-		},
-		// kafka.Message{
-		// 	Key:   []byte("Key-B"),
-		// 	Value: []byte("One!"),
-		// },
-		// kafka.Message{
-		// 	Key:   []byte("Key-C"),
-		// 	Value: []byte("Two!"),
-		// },
-	)
+func init() {
+	viper.SetConfigFile(`config.json`)
+	err := viper.ReadInConfig()
 	if err != nil {
-		log.Fatal("failed to write messages:", err)
+		panic(err)
 	}
 
-	if err := w.Close(); err != nil {
-		log.Fatal("failed to close writer:", err)
+	if viper.GetBool(`debug`) {
+		log.Println("Service RUN on DEBUG mode")
 	}
+}
+
+func main() {
+	loc, err := time.LoadLocation("America/Chicago")
+	if err != nil {
+		log.Println(loc)
+	}
+	host := viper.GetString(`database.host`)
+	port := viper.GetInt(`database.port`)
+	user := viper.GetString(`database.user`)
+	password := viper.GetString(`database.pass`)
+	dbname := viper.GetString(`database.name`)
+	time.Local = loc
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
+		"password=%s dbname=%s sslmode=disable",
+		host, port, user, password, dbname)
+
+	db, err := sql.Open("postgres", psqlInfo)
+	if err != nil {
+		log.Println(err)
+	}
+
+	defer db.Close()
+	app, _, _ := SetupFirebase()
+	core.Init(db, app)
+
+}
+
+func SetupFirebase() (*firebase.App, context.Context, *messaging.Client) {
+
+	ctx := context.Background()
+
+	serviceAccountKeyFilePath, err := filepath.Abs("./serviceAccountKey.json")
+	if err != nil {
+		panic("Unable to load serviceAccountKeys.json file")
+	}
+
+	opt := option.WithCredentialsFile(serviceAccountKeyFilePath)
+
+	//Firebase admin SDK initialization
+	app, err := firebase.NewApp(context.Background(), nil, opt)
+	if err != nil {
+		panic("Firebase load error")
+	}
+
+	//Messaging client
+	client, _ := app.Messaging(ctx)
+
+	return app, ctx, client
 }
