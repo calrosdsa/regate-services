@@ -2,11 +2,15 @@ package usecase
 
 import (
 	"context"
-	firebase "firebase.google.com/go"
-	"firebase.google.com/go/messaging"
+	"encoding/json"
 	"log"
 	"notification/domain/repository"
+	// domain "notification/domain"
 	"time"
+
+
+	firebase "firebase.google.com/go"
+	"firebase.google.com/go/messaging"
 )
 
 type messageUcase struct {
@@ -15,43 +19,76 @@ type messageUcase struct {
 	firebase    *firebase.App
 }
 
-func (m *messageUcase) GetLastMessagesFromGroup(ctx context.Context, id int) ([]repository.MessageGrupo, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (m *messageUcase) GetUsersFromGroup(ctx context.Context, id int) ([]repository.ProfileUser, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
 func NewUseCase(messageRepo repository.MessageRepository, firebase *firebase.App) repository.MessageUseCase {
-	return &messageUcase{messageRepo: messageRepo, firebase: firebase}
+	timeout := time.Duration(5) * time.Second
+	return &messageUcase{messageRepo: messageRepo, firebase: firebase,timeout: timeout}
 }
 
-func (u *messageUcase) sendNotification(ctx context.Context, tokens []string) {
+
+func (u *messageUcase) SendNotificationToUsersGroup(ctx context.Context,message []byte) (err error) {
+	ctx,cancel := context.WithTimeout(ctx,u.timeout)
+	defer cancel()
+	var data repository.MessageGrupo
+    err = json.Unmarshal(message,&data)
+	if err != nil {
+		return
+	}
+	// messages,err := u.messageRepo.GetLastMessagesFromGroup(ctx,data.GrupoId)
+	// if err != nil{
+	// 	log.Println("Message error",err)
+	// }
+	fcm_tokens ,err := u.messageRepo.GetUsersFromGroup(ctx ,data.GrupoId)
+	if err != nil {
+		log.Println("FCM_TOKENS",err)
+		return
+	}
+	tokens := make([]string,len(fcm_tokens))
+	for _,val := range fcm_tokens{
+		tokens = append(tokens, val.FcmToken)
+		u.sendNotifications(ctx,val.FcmToken,message)	
+	}
+	log.Println("TOKENS",tokens)
+	return 
+}
+func (u *messageUcase) sendNotifications(ctx context.Context, tokens string,messages []byte) {
 
 	client, err := u.firebase.Messaging(ctx)
 	if err != nil {
 		log.Println(err)
 	}
-
-	// registrationToken := "dlRvPgmLQyaMVqFUuoJRCZ:APA91bHTm16p5Vw87ftsimJ0DyIBD00hd3RdGSJWXS8-vQyO1Mn-ntV8XlaTbpGExrBg9Tqil2FkZTvQN-QmRTJvNRN52mx1jy_OuTyigsM2LG2Q9ThyPMR5T6o0ah9eezDZITGWMNzK"
-	message := &messaging.MulticastMessage{
-		//Notification: &messaging.Notification{
-		//	Title: "Notification Test",
+	message := &messaging.Message{
+			//Notification: &messaging.Notification{
+				//	Title: "Notification Test",
 		//	Body:  "Hello React!!",
 		//},
-		Tokens: tokens,
+		Token: tokens,
 		Data: map[string]string{
-			"title":    "FCM Notification Title ",
-			"subtext":  "FCM Notification Sub Title",
+			"title":    "Nuevo Mensaje",
+			"entity":  string(messages),
 			"type":     "999",
 			"priority": "high",
 		},
 	}
-
-	response, err := client.SendMulticast(ctx, message)
+	// arrayMessages := make([]*messaging.Message, 0,len(tokens))
+	// for _,token := range tokens {
+	// 	message := &messaging.Message{
+	// 		//Notification: &messaging.Notification{
+	// 			//	Title: "Notification Test",
+	// 			//	Body:  "Hello React!!",
+	// 			//},
+	// 			Token: token,
+	// 			Data: map[string]string{
+	// 				"title":    "Nuevo Mensaje",
+	// 				"subtext":  string(messages),
+	// 				"type":     "999",
+	// 				"priority": "high",
+	// 			},
+	// 			FCMOptions: &messaging.FCMOptions{},
+	// 		}
+	// 		arrayMessages = append(arrayMessages, message)
+	// 	}
+	// response, err := client.SendAll(ctx,arrayMessages)
+	response, err := client.Send(ctx, message)
 	if err != nil {
 		log.Println(err)
 	}

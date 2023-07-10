@@ -22,6 +22,7 @@ func (k *MessageKafkaHandler) MessageGroupConsumer() {
 	r := kafka.NewReader(kafka.ReaderConfig{
 		Brokers:   []string{"localhost:9094"},
 		Topic:     "notification-message-group",
+		GroupID: "consumer-group-messages",
 		Partition: 0,
 		MaxBytes:  10e6, // 10MB
 	})
@@ -33,7 +34,8 @@ func (k *MessageKafkaHandler) MessageGroupConsumer() {
 			break
 		}
 		log.Println("RUNNN")
-		fmt.Printf("message at offset %d: %s = %s\n", m.Offset, string(m.Key), string(m.Value))
+		fmt.Printf("message at offset %d: %s = %s\n %s", m.Offset, string(m.Key), string(m.Value),m.Time.Local().String())
+		k.messageUcase.SendNotificationToUsersGroup(context.Background(),m.Value)
 	}
 
 	if err := r.Close(); err != nil {

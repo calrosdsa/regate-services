@@ -10,6 +10,7 @@ import (
 
 func Init(db *sql.DB, firebase *_firebase.App) {
 
+	
 	messageRepo := _messageRepo.NewRepository(db)
 	messageUcase := _messageUcase.NewUseCase(messageRepo, firebase)
 
