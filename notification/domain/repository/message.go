@@ -3,17 +3,17 @@ package repository
 import "context"
 
 type MessageRepository interface {
-	GetLastMessagesFromGroup(ctx context.Context, id int) ([]MessageGrupo, error)
+	GetLastMessagesFromGroup(ctx context.Context, id int) ([]MessageGroupPayload, error)
 	GetUsersFromGroup(ctx context.Context, id int) ([]FcmToken, error)
 }
 
 type MessageUseCase interface {
 	// GetLastMessagesFromGroup(ctx context.Context, id int) ([]MessageGrupo, error)
 	// GetUsersFromGroup(ctx context.Context, id int) ([]ProfileUser, error)
-	SendNotificationToUsersGroup(ctx context.Context,message []byte)(err error)
+	SendNotificationToUsersGroup(ctx context.Context, message []byte) (err error)
 }
-type FcmToken struct{
-	FcmToken string 
+type FcmToken struct {
+	FcmToken string
 }
 type ProfileUser struct {
 	Nombre   string `json:"nombre"`
@@ -26,11 +26,12 @@ type ProfileUser struct {
 	FcmToken    *string `json:"fcm_token"`
 }
 
-type MessageGrupo struct {
-	Id        int    `json:"id"`
-	GrupoId   int    `json:"grupo_id"`
-	ProfileId int    `json:"profile_id"`
-	Content   string `json:"content"`
-	CreatedAt string `json:"created_at,omitempty"`
-	ReplyTo   *int   `json:"reply_to"`
+type MessageGroupPayload struct {
+	Id              int     `json:"id"`
+	GrupoId         int     `json:"grupo_id"`
+	Content         string  `json:"content"`
+	CreatedAt       string  `json:"created_at,omitempty"`
+	ProfileName     string  `json:"profile_name"`
+	ProfileApellido *string `json:"profile_apellido"`
+	ProfilePhoto    *string `json:"profile_photo"`
 }
