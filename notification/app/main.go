@@ -27,9 +27,9 @@ func init() {
 		panic(err)
 	}
 
-	if viper.GetBool(`debug`) {
-		log.Println("Service RUN on DEBUG mode")
-	}
+	// if viper.GetBool(`debug`) {
+	// 	log.Println("Service RUN on DEBUG mode")
+	// }
 }
 
 func main() {
@@ -55,8 +55,10 @@ func main() {
 	defer db.Close()
 	app, _, _ := SetupFirebase()
 	core.Init(db, app)
-
+	
+	
 }
+
 
 func SetupFirebase() (*firebase.App, context.Context, *messaging.Client) {
 

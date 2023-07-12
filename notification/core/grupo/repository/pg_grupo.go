@@ -8,17 +8,17 @@ import (
 	// "github.com/lib/pq"
 )
 
-type messageRepository struct {
+type grupoRepository struct {
 	Conn *sql.DB
 }
 
-func NewRepository(sql *sql.DB) r.MessageRepository {
-	return &messageRepository{
+func NewRepository(sql *sql.DB) r.GrupoRepository {
+	return &grupoRepository{
 		Conn: sql,
 	}
 }
 
-func (p messageRepository) GetLastMessagesFromGroup(ctx context.Context, id int) (res []r.MessageGroupPayload, err error) {
+func (p grupoRepository) GetLastMessagesFromGroup(ctx context.Context, id int) (res []r.MessageGroupPayload, err error) {
 	query := `select m.id,m.grupo_id,m.content,m.created_at,p.nombre,p.apellido,p.profile_photo
 	 from grupo_messages as m inner join profiles as p on p.profile_id = m.profile_id
 	where grupo_id = $1
@@ -27,7 +27,7 @@ func (p messageRepository) GetLastMessagesFromGroup(ctx context.Context, id int)
 	return
 }
 
-func (p messageRepository) GetUsersFromGroup(ctx context.Context, id int) (res []r.FcmToken, err error) {
+func (p grupoRepository) GetUsersFromGroup(ctx context.Context, id int) (res []r.FcmToken, err error) {
 	query := `select p.fcm_token from user_grupo as us 
 	left join profiles as p on p.profile_id = us.profile_id where grupo_id = $1`
 	log.Println("ID", id)
@@ -38,7 +38,7 @@ func (p messageRepository) GetUsersFromGroup(ctx context.Context, id int) (res [
 	return
 }
 
-func (p *messageRepository) fetchFcmTokens(ctx context.Context, query string, args ...interface{}) (res []r.FcmToken, err error) {
+func (p *grupoRepository) fetchFcmTokens(ctx context.Context, query string, args ...interface{}) (res []r.FcmToken, err error) {
 	rows, err := p.Conn.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
@@ -60,7 +60,7 @@ func (p *messageRepository) fetchFcmTokens(ctx context.Context, query string, ar
 	return res, nil
 }
 
-func (p *messageRepository) fetchMessagesGrupo(ctx context.Context, query string, args ...interface{}) (res []r.MessageGroupPayload, err error) {
+func (p *grupoRepository) fetchMessagesGrupo(ctx context.Context, query string, args ...interface{}) (res []r.MessageGroupPayload, err error) {
 	rows, err := p.Conn.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err

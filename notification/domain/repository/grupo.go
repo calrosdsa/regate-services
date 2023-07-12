@@ -2,15 +2,16 @@ package repository
 
 import "context"
 
-type MessageRepository interface {
+type GrupoRepository interface {
 	GetLastMessagesFromGroup(ctx context.Context, id int) ([]MessageGroupPayload, error)
 	GetUsersFromGroup(ctx context.Context, id int) ([]FcmToken, error)
 }
 
-type MessageUseCase interface {
+type GrupoUseCase interface {
 	// GetLastMessagesFromGroup(ctx context.Context, id int) ([]MessageGrupo, error)
 	// GetUsersFromGroup(ctx context.Context, id int) ([]ProfileUser, error)
 	SendNotificationToUsersGroup(ctx context.Context, message []byte) (err error)
+	SendNotificationSalaCreation(ctx context.Context,payload []byte)(err error)
 }
 type FcmToken struct {
 	FcmToken string

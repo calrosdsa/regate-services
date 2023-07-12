@@ -1,23 +1,18 @@
 package main
 
 import (
-	"context"
-	"google.golang.org/api/option"
-	"notification/core"
-
 	// "net"
 	// "strconv"
 	"database/sql"
-	firebase "firebase.google.com/go"
-	"firebase.google.com/go/messaging"
+	
 	"fmt"
 
 	"log"
-	"path/filepath"
 	"time"
 
 	_ "github.com/lib/pq"
 	"github.com/spf13/viper"
+	core "message/core"
 )
 
 func init() {
@@ -53,30 +48,6 @@ func main() {
 	}
 
 	defer db.Close()
-	app, _, _ := SetupFirebase()
-	core.Init(db, app)
+	core.Init(db)
 
-}
-
-func SetupFirebase() (*firebase.App, context.Context, *messaging.Client) {
-
-	ctx := context.Background()
-
-	serviceAccountKeyFilePath, err := filepath.Abs("./serviceAccountKey.json")
-	if err != nil {
-		panic("Unable to load serviceAccountKeys.json file")
-	}
-
-	opt := option.WithCredentialsFile(serviceAccountKeyFilePath)
-
-	//Firebase admin SDK initialization
-	app, err := firebase.NewApp(context.Background(), nil, opt)
-	if err != nil {
-		panic("Firebase load error")
-	}
-
-	//Messaging client
-	client, _ := app.Messaging(ctx)
-
-	return app, ctx, client
 }
