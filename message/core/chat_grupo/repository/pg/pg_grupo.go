@@ -3,7 +3,7 @@ package pg
 import (
 	"context"
 	"database/sql"
-	"log"
+	// "log"
 	r "message/domain/repository"
 )
 
@@ -28,34 +28,34 @@ func (p *grupoRepo) SaveGrupoMessage(ctx context.Context, d *r.MessageGrupo) (er
 
 
 
-func (m *grupoRepo) fetchMessagesGrupo(ctx context.Context, query string, args ...interface{}) (res []r.MessageGrupo, err error) {
-	rows, err := m.Conn.QueryContext(ctx, query, args...)
-	if err != nil {
-		return nil, err
-	}
-	defer func() {
-		errRow := rows.Close()
-		if errRow != nil {
-			log.Println(errRow)
-		}
-	}()
-	res = make([]r.MessageGrupo, 0)
-	for rows.Next() {
-		t := r.MessageGrupo{}
-		err = rows.Scan(
-			&t.Id,
-			&t.GrupoId,
-			&t.ProfileId,
-			&t.Content,
-			&t.CreatedAt,
-			&t.ReplyTo,
-			&t.ReplyMessage.Id,
-			&t.ReplyMessage.GrupoId,
-			&t.ReplyMessage.ProfileId,
-			&t.ReplyMessage.Content,
-			&t.ReplyMessage.CreatedAt,
-		)
-		res = append(res, t)
-	}
-	return res, nil
-}
+// func (m *grupoRepo) fetchMessagesGrupo(ctx context.Context, query string, args ...interface{}) (res []r.MessageGrupo, err error) {
+// 	rows, err := m.Conn.QueryContext(ctx, query, args...)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	defer func() {
+// 		errRow := rows.Close()
+// 		if errRow != nil {
+// 			log.Println(errRow)
+// 		}
+// 	}()
+// 	res = make([]r.MessageGrupo, 0)
+// 	for rows.Next() {
+// 		t := r.MessageGrupo{}
+// 		err = rows.Scan(
+// 			&t.Id,
+// 			&t.GrupoId,
+// 			&t.ProfileId,
+// 			&t.Content,
+// 			&t.CreatedAt,
+// 			&t.ReplyTo,
+// 			&t.ReplyMessage.Id,
+// 			&t.ReplyMessage.GrupoId,
+// 			&t.ReplyMessage.ProfileId,
+// 			&t.ReplyMessage.Content,
+// 			&t.ReplyMessage.CreatedAt,
+// 		)
+// 		res = append(res, t)
+// 	}
+// 	return res, nil
+// }
