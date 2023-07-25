@@ -50,7 +50,7 @@ var H = hub{
 	rooms:      make(map[string]map[*connection]bool),
 }
 
-func (h *hub) Run(us repository.GrupoUseCase) {
+func (h *hub) Run(us repository.ConversationUseCase) {
 	ctx := context.Background()
 	for {
 		select {
@@ -77,15 +77,15 @@ func (h *hub) Run(us repository.GrupoUseCase) {
 			connections := h.rooms[m.room]
 			// log.Println("Sending data")
 			log.Println(string(m.data))
-			event := &repository.GrupoEvent{}
+			event := &repository.ConversationEvent{}
 			err := json.Unmarshal(m.data,event)
 			if err != nil {
 				log.Println("Fail to unmarshall",err)
 			}
 			if event.Type == "message"{	
-				grupoId,_ :=strconv.Atoi(m.room)
-				event.Message.GrupoId = grupoId
-				err = us.SaveGrupoMessage(ctx,&event.Message)
+				conversationId,_ :=strconv.Atoi(m.room)
+				event.Message.ConversationId = conversationId
+				err = us.SaveMessage(ctx,&event.Message)
 				if err != nil{
 					log.Println("fail to save message")
 					log.Println(err)
