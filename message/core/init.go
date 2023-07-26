@@ -2,9 +2,14 @@ package core
 
 import (
 	"database/sql"
+	_conversationDeliveryWs "message/core/conversation/delivery/ws"
 	_conversationDeliveryHttp "message/core/conversation/delivery/http"
 	_conversationR "message/core/conversation/repository/pg"
 	_conversationU "message/core/conversation/usecase"
+
+	// _conversationADeliveryHttp "message/core/conversation/delivery/http"
+	// _conversationAR "message/core/conversation/repository/pg"
+	// _conversationAU "message/core/conversation/usecase"
 
 	_utilU "message/core/util/usecase"
 
@@ -29,6 +34,11 @@ func Init(db *sql.DB){
 	conversationR := _conversationR.NewRepository(db)
 	conversationU := _conversationU.NewUseCase(timeoutContext,conversationR,utilU)
 	_conversationDeliveryHttp.NewHandler(e,conversationU)
+	_conversationDeliveryWs.NewWsHandler(e,conversationU)
+
+	conversationAR := _conversationR.NewAdminRepository(db)
+	conversationAU := _conversationU.NewAdminUseCase(timeoutContext,conversationAR,utilU)
+	_conversationDeliveryHttp.NewAdminHandler(e,conversationAU)
 
 	e.Start("0.0.0.0:9091")
 }

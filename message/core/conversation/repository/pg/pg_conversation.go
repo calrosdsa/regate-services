@@ -18,9 +18,9 @@ func NewRepository(conn *sql.DB) r.ConversationRepository {
 }
 
 func (p *conversationRepo) SaveMessage(ctx context.Context, d *r.Inbox) (err error) {
-	query := `insert into conversation_message (conversation_id,sender_id,content,created_at,reply_to) 
-	values($1,$2,$3,now(),$4) returning id,created_at`
-	err = p.Conn.QueryRowContext(ctx, query, d.ConversationId, d.SenderId, d.Content, d.ReplyTo).Scan(&d.Id, &d.CreatedAt)
+	query := `insert into conversation_message (id,conversation_id,sender_id,content,created_at,reply_to) 
+	values($1,$2,$3,$4,$5,$6) returning id,created_at`
+	err = p.Conn.QueryRowContext(ctx, query,d.Id ,d.ConversationId, d.SenderId, d.Content,d.CreatedAt, d.ReplyTo).Scan(&d.Id, &d.CreatedAt)
 	return
 }
 
@@ -62,7 +62,7 @@ func (m *conversationRepo) fetchConversationMessages(ctx context.Context, query 
 			&t.CreatedAt,
 			&t.ReplyTo,
 			&t.Reply.Id,
-			&t.Reply.EstablecimientoId,
+			&t.Reply.ConversationId,
 			&t.Reply.SenderId,
 			&t.Reply.Content,
 			&t.Reply.CreatedAt,

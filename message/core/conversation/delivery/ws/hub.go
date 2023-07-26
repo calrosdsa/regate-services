@@ -77,22 +77,22 @@ func (h *hub) Run(us repository.ConversationUseCase) {
 			connections := h.rooms[m.room]
 			// log.Println("Sending data")
 			log.Println(string(m.data))
-			event := &repository.ConversationEvent{}
-			err := json.Unmarshal(m.data,event)
+			message := &repository.Inbox{}
+			err := json.Unmarshal(m.data,message)
 			if err != nil {
 				log.Println("Fail to unmarshall",err)
 			}
-			if event.Type == "message"{	
+			// if event.Type == "message"{	
 				conversationId,_ :=strconv.Atoi(m.room)
-				event.Message.ConversationId = conversationId
-				err = us.SaveMessage(ctx,&event.Message)
+				message.ConversationId = conversationId
+				err = us.SaveMessage(ctx,message)
 				if err != nil{
 					log.Println("fail to save message")
 					log.Println(err)
 				}
-			}
+			// }
 
-			jsonStr ,err := json.Marshal(event)
+			jsonStr ,err := json.Marshal(message)
 			if err != nil {
 				log.Println(err)
 			}
