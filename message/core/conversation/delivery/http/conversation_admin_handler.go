@@ -11,7 +11,7 @@ import (
 	// "strconv"
 
 	"github.com/labstack/echo/v4"
-	// _jwt "message/domain/util"
+	_jwt "message/domain/util"
 )
 
 type ConversationAdminHandler struct {
@@ -29,6 +29,13 @@ func NewAdminHandler(e *echo.Echo, conversationAdminUseCase r.ConversationAdminU
 }
 
 func (h *ConversationAdminHandler)GetConversationsEstablecimiento(c echo.Context)(err error){
+	auth := c.Request().Header["Authorization"][0]
+	token := _jwt.GetToken(auth)
+	_, err = _jwt.ExtractClaims(token)
+	if err != nil {
+		log.Println(err)
+		return c.JSON(http.StatusUnauthorized, r.ResponseMessage{Message: err.Error()})
+	}
 	uuid := c.Param("uuid")
 	// if err != nil {
 		// log.Println("SYNC",err)

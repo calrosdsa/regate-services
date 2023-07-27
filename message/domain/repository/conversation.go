@@ -7,13 +7,14 @@ type EstablecimientoConversation struct {
 	Apellido       string  `json:"apellido"`
 	Photo          *string `json:"photo"`
 	ConversationId int     `json:"conversation_id"`
+	ProfileId      int     `json:"profile_id"`
 }
 
 type ConversationAdminRepository interface {
-	GetConversationsEstablecimiento(ctx context.Context,uuid string)([]EstablecimientoConversation,error)
+	GetConversationsEstablecimiento(ctx context.Context, uuid string) ([]EstablecimientoConversation, error)
 }
 type ConversationAdminUseCase interface {
-	GetConversationsEstablecimiento(ctx context.Context,uuid string)([]EstablecimientoConversation,error)
+	GetConversationsEstablecimiento(ctx context.Context, uuid string) ([]EstablecimientoConversation, error)
 }
 
 type ConversationRepository interface {

@@ -42,7 +42,7 @@ func (h *ConversationHandler)SyncMessage(c echo.Context)(err error){
 		err := h.conversationUcase.SaveMessage(ctx,&message)
 		if err != nil {
 		    log.Println("SYNC error",err)
-			return c.JSON(http.StatusBadRequest, r.ResponseMessage{Message: err.Error()})
+			// return c.JSON(http.StatusBadRequest, r.ResponseMessage{Message: err.Error()})
 		}
 		// log.Println("SYNC",err)
 	}

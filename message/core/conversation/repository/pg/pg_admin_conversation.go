@@ -19,7 +19,7 @@ func NewAdminRepository(conn *sql.DB) r.ConversationAdminRepository {
 }
 
 func (p *conversationAdminRepo) GetConversationsEstablecimiento(ctx context.Context,uuid string) (res []r.EstablecimientoConversation,err error) {
-	query := `select p.nombre,p.apellido,p.profile_photo,c.conversation_id from conversations as c 
+	query := `select p.nombre,p.apellido,p.profile_photo,c.conversation_id,c.profile_id from conversations as c 
 	inner join profiles as p on c.profile_id = p.profile_id
 	inner join establecimientos as e on e.uuid = $1
 	where c.establecimiento_id = e.establecimiento_id`
@@ -50,7 +50,7 @@ func (p *conversationAdminRepo) fetchConversationsAdmin(ctx context.Context, que
 			&t.Apellido,
 			&t.Photo,
 			&t.ConversationId,
-			// &t.ProfileId,
+			&t.ProfileId,
 		)
 		if err != nil {
 			log.Println(err)
