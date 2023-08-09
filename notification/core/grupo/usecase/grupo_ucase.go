@@ -20,8 +20,7 @@ type grupoUcase struct {
 	firebase    *firebase.App
 }
 
-func NewUseCase(messageRepo repository.GrupoRepository, firebase *firebase.App) repository.GrupoUseCase {
-	timeout := time.Duration(5) * time.Second
+func NewUseCase(messageRepo repository.GrupoRepository, firebase *firebase.App,timeout time.Duration) repository.GrupoUseCase {
 	return &grupoUcase{messageRepo: messageRepo, firebase: firebase, timeout: timeout}
 }
 
