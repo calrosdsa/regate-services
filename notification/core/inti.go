@@ -14,7 +14,7 @@ import (
 	_messageUcase "notification/core/grupo/usecase"
 
 	//Sala
-	// _messageKafka "notification/core/grupo/delivery/kafka"
+	_salaKafka "notification/core/sala/delivery/kafka"
 	_salaRepo "notification/core/sala/repository"
 	_salaUcase "notification/core/sala/usecase"
 
@@ -29,24 +29,24 @@ func Init(db *sql.DB, firebase *_firebase.App) {
 	timeout := time.Duration(5) * time.Second
 	utilU := _utilUcase.NewUseCase()
 	grupoRepo := _messageRepo.NewRepository(db)
-	grupoUcase := _messageUcase.NewUseCase(grupoRepo, firebase,timeout)
+	grupoUcase := _messageUcase.NewUseCase(grupoRepo, firebase, timeout)
 
 	grupoKafka := _messageKafka.NewKafkaHandler(grupoUcase)
 
 	salaRepo := _salaRepo.NewRepository(db)
-    salaUseCase := _salaUcase.NewUseCase(salaRepo, firebase,timeout,utilU)
+	salaUseCase := _salaUcase.NewUseCase(salaRepo, firebase, timeout, utilU)
+	salaKafka := _salaKafka.NewKafkaHandler(salaUseCase)
 
-
+	go salaKafka.SalaReservationConflictConsumer()
 	go grupoKafka.MessageGroupConsumer()
-	go grupoKafka.SalaCreationConsumer()	
+	go grupoKafka.SalaCreationConsumer()
 
-    quitChannel := make(chan os.Signal, 1)
-    signal.Notify(quitChannel, syscall.SIGINT, syscall.SIGTERM)
-    <-quitChannel
-    //time for cleanup before exit
-    log.Println("Adios!")
+	quitChannel := make(chan os.Signal, 1)
+	signal.Notify(quitChannel, syscall.SIGINT, syscall.SIGTERM)
+	<-quitChannel
+	//time for cleanup before exit
+	log.Println("Adios!")
 }
-
 
 // func forever() {
 //     for {
@@ -54,4 +54,3 @@ func Init(db *sql.DB, firebase *_firebase.App) {
 //         time.Sleep(time.Second)
 //     }
 // }
-

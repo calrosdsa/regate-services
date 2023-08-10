@@ -9,5 +9,5 @@ const (
 	//"1"
 	NotificationMessageComplejo 
 	NotificationSalaCreation
-
+	NotificationSalaReservationConflict
 )
