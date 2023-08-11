@@ -13,6 +13,9 @@
       "pass": "postgres",
       "name": "regate"
   },
+  "kafka":{
+    "host":"localhost:9094"
+  },
   "jwt":{
     "jwt_secret":"jwtsecrettoken$"
   }

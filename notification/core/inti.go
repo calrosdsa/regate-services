@@ -40,6 +40,7 @@ func Init(db *sql.DB, firebase *_firebase.App) {
 	go salaKafka.SalaReservationConflictConsumer()
 	go grupoKafka.MessageGroupConsumer()
 	go grupoKafka.SalaCreationConsumer()
+	go salaKafka.SalaHasBennReservedConsumer()
 
 	quitChannel := make(chan os.Signal, 1)
 	signal.Notify(quitChannel, syscall.SIGINT, syscall.SIGTERM)

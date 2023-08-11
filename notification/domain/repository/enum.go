@@ -1,6 +1,15 @@
 package repository
 
 
+
+type SalaEstado int16
+
+const (
+	SalaAvailable SalaEstado = iota
+	SalaUnAvailable
+	SalaReserved 
+)
+
 type NotificationType int64
 
 const (
@@ -10,4 +19,5 @@ const (
 	NotificationMessageComplejo 
 	NotificationSalaCreation
 	NotificationSalaReservationConflict
+	NotificationSalaHasBeenReserved
 )

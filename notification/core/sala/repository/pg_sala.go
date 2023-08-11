@@ -25,6 +25,13 @@ func (p *salaRepo) GetFcmTokensUserSalasSala(ctx context.Context,salaId int)(res
 	return
 }
 
+func (p *salaRepo) DeleteSala(ctx context.Context,salaId int)(err error){
+	query := `delete from salas where estado = $1 and sala_id = $2`
+	_,err =  p.Conn.ExecContext(ctx,query,r.SalaUnAvailable,salaId)
+	return
+}
+
+
 func (p *salaRepo) fetchFcmTokens(ctx context.Context, query string, args ...interface{}) (res []r.FcmToken, err error) {
 	rows, err := p.Conn.QueryContext(ctx, query, args...)
 	if err != nil {

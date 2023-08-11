@@ -42,3 +42,27 @@ func (k *SalaKafkaHander) SalaReservationConflictConsumer() {
 		log.Fatal("failed to close reader:", err)
 	}
 }
+
+func (k *SalaKafkaHander) SalaHasBennReservedConsumer() {
+	r := kafka.NewReader(kafka.ReaderConfig{	
+		Brokers:   []string{"localhost:9094"},
+		Topic:     "sala-has-been-reserved",
+		GroupID:   "consumer-group-sala-has-been-reserved",
+		Partition: 0,
+		MaxBytes:  10e6, // 10MB
+	})
+	for {
+		m, err := r.ReadMessage(context.Background())
+		if err != nil {
+			break
+		}
+		log.Println("RUNNN")
+		fmt.Printf("message at offset %d: %s = %s\n %s", m.Offset, string(m.Key), string(m.Value), m.Time.Local().String())
+		err = k.salaU.SalaHasBennReserved(context.TODO(), m.Value)
+		log.Println(err)
+	}
+
+	if err := r.Close(); err != nil {
+		log.Fatal("failed to close reader:", err)
+	}
+}
