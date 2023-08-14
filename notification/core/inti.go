@@ -18,6 +18,12 @@ import (
 	_salaRepo "notification/core/sala/repository"
 	_salaUcase "notification/core/sala/usecase"
 
+	//Billing
+	_billingKafka "notification/core/billing/delivery/kafka"
+	// _billingRepo "notification/core/billing/repository"
+	_billingUcase "notification/core/billing/usecase"
+
+	_utilRepo "notification/core/util/repository"
 	_utilUcase "notification/core/util/usecase"
 
 	"os"
@@ -27,7 +33,10 @@ import (
 
 func Init(db *sql.DB, firebase *_firebase.App) {
 	timeout := time.Duration(5) * time.Second
-	utilU := _utilUcase.NewUseCase()
+
+	utilR := _utilRepo.NewRepo(db)
+	utilU := _utilUcase.NewUseCase(timeout,utilR)
+
 	grupoRepo := _messageRepo.NewRepository(db)
 	grupoUcase := _messageUcase.NewUseCase(grupoRepo, firebase, timeout)
 
@@ -37,16 +46,22 @@ func Init(db *sql.DB, firebase *_firebase.App) {
 	salaUseCase := _salaUcase.NewUseCase(salaRepo, firebase, timeout, utilU)
 	salaKafka := _salaKafka.NewKafkaHandler(salaUseCase)
 
+	// billingR := _billingRepo.NewRepository(db)
+	billingU := _billingUcase.NewUseCase(firebase, timeout, utilU)
+	billinKafka := _billingKafka.NewKafkaHandler(billingU)
+
 	go salaKafka.SalaReservationConflictConsumer()
 	go grupoKafka.MessageGroupConsumer()
 	go grupoKafka.SalaCreationConsumer()
 	go salaKafka.SalaHasBennReservedConsumer()
+	go billinKafka.BillingNotificationConsumer()
 
 	quitChannel := make(chan os.Signal, 1)
 	signal.Notify(quitChannel, syscall.SIGINT, syscall.SIGTERM)
 	<-quitChannel
 	//time for cleanup before exit
 	log.Println("Adios!")
+
 }
 
 // func forever() {

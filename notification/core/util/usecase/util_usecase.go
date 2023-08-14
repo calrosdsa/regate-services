@@ -5,15 +5,28 @@ import (
 	"log"
 	r "notification/domain/repository"
 	"strconv"
+	"time"
 
 	firebase "firebase.google.com/go"
 	"firebase.google.com/go/messaging"
 )
 type utilUseCase struct {
+	timeout time.Duration
+	utilRepo r.UtilRepository
 }
 
-func NewUseCase() r.UtilUseCase{
-	return &utilUseCase{}
+func NewUseCase(timeout time.Duration,utilRepo r.UtilRepository) r.UtilUseCase{
+	return &utilUseCase{
+		timeout: timeout,
+		utilRepo: utilRepo,
+	}
+}
+
+func (u *utilUseCase)GetProfileFcmToken(ctx context.Context,id int)(res string,err error){
+	ctx,cancel := context.WithTimeout(ctx,u.timeout)
+	defer cancel()
+	res,err = u.utilRepo.GetProfileFcmToken(ctx,id)
+	return
 }
 
 func (u *utilUseCase) SendNotification(ctx context.Context, tokens string, data []byte, notificationType r.NotificationType,firebase *firebase.App){

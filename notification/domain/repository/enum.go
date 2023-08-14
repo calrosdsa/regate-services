@@ -20,4 +20,5 @@ const (
 	NotificationSalaCreation
 	NotificationSalaReservationConflict
 	NotificationSalaHasBeenReserved
+	NotificationBilling
 )
