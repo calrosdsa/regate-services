@@ -34,6 +34,14 @@ type SalaUseCase interface {
 }
 
 type SalaRepository interface {
-	GetFcmTokensUserSalasSala(ctx context.Context, salaId int) ([]FcmToken, error)
+	GetFcmTokensUserSalasSala(ctx context.Context, salaId int) ([]UserSalaFcmToken, error)
 	DeleteSala(ctx context.Context, salaId int) (err error)
+}
+
+
+
+type UserSalaFcmToken struct{
+	FcmToken string
+	ProfileId int
+	Amount float64
 }

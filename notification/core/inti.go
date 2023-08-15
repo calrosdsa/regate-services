@@ -20,7 +20,7 @@ import (
 
 	//Billing
 	_billingKafka "notification/core/billing/delivery/kafka"
-	// _billingRepo "notification/core/billing/repository"
+	_billingRepo "notification/core/billing/repository"
 	_billingUcase "notification/core/billing/usecase"
 
 	_utilRepo "notification/core/util/repository"
@@ -37,18 +37,21 @@ func Init(db *sql.DB, firebase *_firebase.App) {
 	utilR := _utilRepo.NewRepo(db)
 	utilU := _utilUcase.NewUseCase(timeout,utilR)
 
+
+	
+	billingR := _billingRepo.NewRepository(db)
+	billingU := _billingUcase.NewUseCase(firebase, timeout, utilU,billingR)
+	billinKafka := _billingKafka.NewKafkaHandler(billingU)
+
 	grupoRepo := _messageRepo.NewRepository(db)
 	grupoUcase := _messageUcase.NewUseCase(grupoRepo, firebase, timeout)
 
 	grupoKafka := _messageKafka.NewKafkaHandler(grupoUcase)
 
 	salaRepo := _salaRepo.NewRepository(db)
-	salaUseCase := _salaUcase.NewUseCase(salaRepo, firebase, timeout, utilU)
+	salaUseCase := _salaUcase.NewUseCase(salaRepo, firebase, timeout, utilU,billingR)
 	salaKafka := _salaKafka.NewKafkaHandler(salaUseCase)
 
-	// billingR := _billingRepo.NewRepository(db)
-	billingU := _billingUcase.NewUseCase(firebase, timeout, utilU)
-	billinKafka := _billingKafka.NewKafkaHandler(billingU)
 
 	go salaKafka.SalaReservationConflictConsumer()
 	go grupoKafka.MessageGroupConsumer()

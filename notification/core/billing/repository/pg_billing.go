@@ -5,51 +5,36 @@ import (
 	"database/sql"
 	"log"
 	r "notification/domain/repository"
+	"strconv"
+	"strings"
 )
 
-type salaRepo struct {
+type billingRepo struct {
 	Conn *sql.DB
 }
 
-func NewRepository(conn *sql.DB) r.SalaRepository {
-	return &salaRepo{
+func NewRepository(conn *sql.DB) r.BillingRepository {
+	return &billingRepo{
 		Conn: conn,
 	}
 }
 
-func (p *salaRepo) GetFcmTokensUserSalasSala(ctx context.Context,salaId int)(res []r.FcmToken,err error){
-	query := `select p.fcm_token from users_sala as us
-	inner join profiles as p on p.profile_id = us.profile_id
-	where sala_id = $1`
-	res,err = p.fetchFcmTokens(ctx,query,salaId)
-	return
-}
-
-func (p *salaRepo) DeleteSala(ctx context.Context,salaId int)(err error){
-	query := `delete from salas where estado = $1 and sala_id = $2`
-	_,err =  p.Conn.ExecContext(ctx,query,r.SalaUnAvailable,salaId)
-	return
-}
-
-
-func (p *salaRepo) fetchFcmTokens(ctx context.Context, query string, args ...interface{}) (res []r.FcmToken, err error) {
-	rows, err := p.Conn.QueryContext(ctx, query, args...)
-	if err != nil {
-		return nil, err
-	}
-	defer func() {
-		errRow := rows.Close()
-		if errRow != nil {
-			log.Println(errRow)
+func (p *billingRepo)AddConsume(ctx context.Context,d []r.Consumo){
+	query := "insert into consumo(profile_id,amount,type_entity,id_entity,message) values"
+	vals := []interface{}{}
+	filedNumbers := 5
+	for i, val := range d {
+		n := i * filedNumbers
+		query += `(`
+		for j := 0; j < filedNumbers; j++ {
+			query += `$`+strconv.Itoa(n+j+1) + `,`
 		}
-	}()
-	res = make([]r.FcmToken, 0)
-	for rows.Next() {
-		t := r.FcmToken{}
-		err = rows.Scan(
-			&t.FcmToken,
-		)
-		res = append(res, t)
+		query = query[:len(query)-1] + `),`
+		vals = 	append(vals,val.ProfileId,val.Amount,val.TypeEntity,val.IdEnitity,val.Message)
 	}
-	return res, nil
+	query = strings.TrimSuffix(query,",")
+	_,err := p.Conn.ExecContext(ctx,query,vals...)
+	if err != nil {
+		log.Println(err)
+	}
 }

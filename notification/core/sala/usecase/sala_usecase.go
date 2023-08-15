@@ -16,14 +16,17 @@ type salaUseCase struct {
 	firebase *firebase.App
 	timeout  time.Duration
 	utilU    r.UtilUseCase
+	billingRepo r.BillingRepository
 }
 
-func NewUseCase(salaRepo r.SalaRepository, firebase *firebase.App, timeout time.Duration, utilU r.UtilUseCase) r.SalaUseCase {
+func NewUseCase(salaRepo r.SalaRepository, firebase *firebase.App, timeout time.Duration, utilU r.UtilUseCase,
+	billingRepo r.BillingRepository) r.SalaUseCase {
 	return &salaUseCase{
 		salaRepo: salaRepo,
 		timeout:  timeout,
 		firebase: firebase,
 		utilU:    utilU,
+		billingRepo: billingRepo,
 	}
 }
 
@@ -49,8 +52,6 @@ func (u *salaUseCase) SalaHasBennReserved(ctx context.Context,d []byte) (err err
 }
 
 func (u *salaUseCase) SalaReservationConflict(ctx context.Context,d []byte) (err error) {
-	ctx, cancel := context.WithTimeout(ctx, u.timeout)
-	defer cancel()
 	var data r.SalaConflictData
 	err = json.Unmarshal(d, &data)
 	if err != nil {
@@ -64,7 +65,7 @@ func (u *salaUseCase) SalaReservationConflict(ctx context.Context,d []byte) (err
 			Message:  "Lamentamos informarte que alguien más ha reservado la cancha que habías seleccionado para la sala.",
 			EntityId: val.Id,
 		}
-		err = u.SendNotificationUsersSala(ctx,message,r.NotificationSalaReservationConflict)
+		err = u.SendNotificationUsersSala2(ctx,message,r.NotificationSalaReservationConflict)
 		if err != nil {
 			log.Println("ERROR",err)
 		}
@@ -77,6 +78,31 @@ func (u *salaUseCase) SalaReservationConflict(ctx context.Context,d []byte) (err
 	return
 }
 func (u *salaUseCase) SendNotificationUsersSala(ctx context.Context,message r.MessageNotification,
+	notification  r.NotificationType) (err error) {
+	res, err := u.salaRepo.GetFcmTokensUserSalasSala(ctx, message.EntityId)
+	var consumes []r.Consumo
+	for _,val := range res{
+		consume := r.Consumo{
+			TypeEntity: r.ReservaSala,
+			IdEnitity: message.EntityId,
+			Message: "Reserva para un cupo en una sala",
+			Amount: val.Amount,
+			ProfileId: val.ProfileId,
+		}
+		consumes = append(consumes, consume)
+	}
+	u.billingRepo.AddConsume(ctx,consumes)
+	if err != nil {
+		return
+	}
+	data, err := json.Marshal(message)
+	for _, val := range res {
+		u.utilU.SendNotification(ctx, val.FcmToken, data,notification, u.firebase)
+	}
+	return
+}
+
+func (u *salaUseCase) SendNotificationUsersSala2(ctx context.Context,message r.MessageNotification,
 	notification  r.NotificationType) (err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.timeout)
 	defer cancel()

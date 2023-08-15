@@ -17,10 +17,14 @@ func NewRepository(conn *sql.DB) r.SalaRepository {
 	}
 }
 
-func (p *salaRepo) GetFcmTokensUserSalasSala(ctx context.Context,salaId int)(res []r.FcmToken,err error){
-	query := `select p.fcm_token from users_sala as us
+func (p *salaRepo) GetFcmTokensUserSalasSala(ctx context.Context,salaId int)(res []r.UserSalaFcmToken,err error){
+	query := `select p.fcm_token,p.profile_id,us.precio from users_sala as us
 	inner join profiles as p on p.profile_id = us.profile_id
 	where sala_id = $1`
+
+	// select count(*) from users_sala as us
+	// inner join profiles as p on p.profile_id = us.profile_id
+	// where sala_id = 101;
 	res,err = p.fetchFcmTokens(ctx,query,salaId)
 	return
 }
@@ -32,7 +36,7 @@ func (p *salaRepo) DeleteSala(ctx context.Context,salaId int)(err error){
 }
 
 
-func (p *salaRepo) fetchFcmTokens(ctx context.Context, query string, args ...interface{}) (res []r.FcmToken, err error) {
+func (p *salaRepo) fetchFcmTokens(ctx context.Context, query string, args ...interface{}) (res []r.UserSalaFcmToken, err error) {
 	rows, err := p.Conn.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
@@ -43,11 +47,13 @@ func (p *salaRepo) fetchFcmTokens(ctx context.Context, query string, args ...int
 			log.Println(errRow)
 		}
 	}()
-	res = make([]r.FcmToken, 0)
+	res = make([]r.UserSalaFcmToken, 0)
 	for rows.Next() {
-		t := r.FcmToken{}
+		t := r.UserSalaFcmToken{}
 		err = rows.Scan(
 			&t.FcmToken,
+			&t.ProfileId,
+			&t.Amount,
 		)
 		res = append(res, t)
 	}

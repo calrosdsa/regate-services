@@ -15,15 +15,23 @@ type billingUCase struct {
 	firebase *firebase.App
 	timeout  time.Duration
 	utilU    r.UtilUseCase
+	billingRepo r.BillingRepository
 }
 
-func NewUseCase(firebase *firebase.App, timeout time.Duration, utilU r.UtilUseCase) r.BillingUseCase {
+func NewUseCase(firebase *firebase.App, timeout time.Duration, utilU r.UtilUseCase,billingRepo r.BillingRepository) r.BillingUseCase {
 	return &billingUCase{
 		timeout:  timeout,
 		firebase: firebase,
 		utilU:    utilU,
+		billingRepo: billingRepo,
 	}
 }
+
+// func (u *billingUCase) AddConsume(ctx context.Context,d r.Consumo) {
+// 	ctx, cancel := context.WithTimeout(ctx, u.timeout)
+// 	defer cancel()
+// 	u.billingRepo.AddConsume(ctx,d)
+// }
 
 func (u *billingUCase) SendNotificationUserBilling(ctx context.Context,d []byte) {
 	ctx, cancel := context.WithTimeout(ctx, u.timeout)
