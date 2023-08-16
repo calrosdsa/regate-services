@@ -85,7 +85,7 @@ func (u *salaUseCase) SendNotificationUsersSala(ctx context.Context,message r.Me
 		consume := r.Consumo{
 			TypeEntity: r.ReservaSala,
 			IdEnitity: message.EntityId,
-			Message: "Reserva para un cupo en una sala",
+			Message: "Reserva de un cupo en una sala",
 			Amount: val.Amount,
 			ProfileId: val.ProfileId,
 		}
