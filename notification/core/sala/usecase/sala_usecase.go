@@ -69,11 +69,11 @@ func (u *salaUseCase) SalaReservationConflict(ctx context.Context,d []byte) (err
 		if err != nil {
 			log.Println("ERROR",err)
 		}
-		err = u.salaRepo.DeleteSala(ctx,val.Id)
-		if err != nil{
-			log.Println()
-			return 
-		}
+		// err = u.salaRepo.DeleteSala(ctx,val.Id)
+		// if err != nil{
+		// 	log.Println()
+		// 	return 
+		// }
 	}
 	return
 }

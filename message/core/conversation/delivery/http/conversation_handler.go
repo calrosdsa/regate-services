@@ -26,6 +26,30 @@ func NewHandler(e *echo.Echo, conversationUcase r.ConversationUseCase) {
 	// e.GET("v1/conversation/messages/:id/",handler.GetConversationMessages)
 	e.GET("v1/conversations/",handler.GetConversations)
 	e.POST("v1/conversation/sync-messages/",handler.SyncMessage)
+	e.GET("v1/conversation/get-id/:establecimientoId/",handler.GetOrCreateConversation)
+}
+func (h *ConversationHandler)GetOrCreateConversation(c echo.Context)(err error){
+	auth := c.Request().Header["Authorization"][0]
+	token := _jwt.GetToken(auth)
+	claims, err := _jwt.ExtractClaims(token)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, r.ResponseMessage{Message: err.Error()})
+	}
+	establecimientoId,err := strconv.Atoi(c.Param("establecimientoId"))
+	if err != nil {
+		return c.JSON(http.StatusUnprocessableEntity, r.ResponseMessage{Message: err.Error()})
+	}
+	ctx := c.Request().Context()
+	conversationId,err := h.conversationUcase.GetOrCreateConversation(ctx,establecimientoId,claims.ProfileId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, r.ResponseMessage{Message: err.Error()})
+	}
+	response := struct{
+		Id int `json:"id"`
+	}{
+		Id: conversationId,
+	}
+	return c.JSON(http.StatusOK,response)
 }
 
 func (h *ConversationHandler)SyncMessage(c echo.Context)(err error){
@@ -70,11 +94,18 @@ func (h *ConversationHandler) GetMessages(c echo.Context) (err error){
 		return c.JSON(http.StatusConflict, r.ResponseMessage{Message: err.Error()})
 	}
 	ctx := c.Request().Context()
-	res,err := h.conversationUcase.GetMessages(ctx,id,page)
+	res,nextPage,err := h.conversationUcase.GetMessages(ctx,id,int16(page),20)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, r.ResponseMessage{Message: err.Error()})
 	}
-	return c.JSON(http.StatusOK, res)
+	response := struct {
+		Page int16 `json:"nextPage"`
+		Results  []r.Inbox `json:"results"`
+	}{
+		Page: nextPage,
+		Results: res,
+	}
+	return c.JSON(http.StatusOK, response)
 }
 
 func (h *ConversationHandler) GetConversations(c echo.Context) (err error){

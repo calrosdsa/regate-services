@@ -30,6 +30,13 @@ func NewUseCase(timeout time.Duration, conversationRepo r.ConversationRepository
 		utilU: utilU,
 	}
 }
+func (u *grupoUcase) GetOrCreateConversation(ctx context.Context,id int,profileId int)(conversationId int,err error){
+	ctx, cancel := context.WithTimeout(ctx, u.timeout)
+	defer cancel()
+	conversationId,err = u.conversationRepo.GetOrCreateConversation(ctx,id,profileId)
+	return 
+}
+
 func (u *grupoUcase) GetConversations(ctx context.Context, id int) (res []r.Conversation, err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.timeout)
 	defer cancel()
@@ -37,11 +44,12 @@ func (u *grupoUcase) GetConversations(ctx context.Context, id int) (res []r.Conv
 	return
 }
 
-func (u *grupoUcase) GetMessages(ctx context.Context, id int,page int) (res []r.Inbox, err error) {
+func (u *grupoUcase) GetMessages(ctx context.Context, id int,page int16,size int8) (res []r.Inbox,nextPage int16, err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.timeout)
 	defer cancel()
-	page,size := u.utilU.PaginationValues(page,20)
+	page = u.utilU.PaginationValues(page)
 	res, err = u.conversationRepo.GetMessages(ctx, id,page,size)
+	nextPage = u.utilU.GetNextPage(int8(len(res)),int8(size),page + 1)
 	return
 }
 

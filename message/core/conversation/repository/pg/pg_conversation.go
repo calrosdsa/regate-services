@@ -17,6 +17,21 @@ func NewRepository(conn *sql.DB) r.ConversationRepository {
 	}
 }
 
+func(p *conversationRepo) GetOrCreateConversation(ctx context.Context,id int,profileId int)(conversationId int,err error){
+	var query string
+	query = `select conversation_id from conversations where profile_id = $1 and establecimiento_id = $2`
+	err = p.Conn.QueryRowContext(ctx,query,profileId,id).Scan(&conversationId)
+	if err != nil{
+		log.Println("Creando conversation")
+		query = `insert into conversations(profile_id,establecimiento_id) values($1,$2) returning conversation_id`
+		err = p.Conn.QueryRowContext(ctx,query,profileId,id).Scan(&conversationId)
+		if err != nil{
+			return 
+		}
+	}
+	return
+}
+
 func (p *conversationRepo) SaveMessage(ctx context.Context, d *r.Inbox) (err error) {
 	query := `insert into conversation_message (id,conversation_id,sender_id,content,created_at,reply_to) 
 	values($1,$2,$3,$4,$5,$6) returning id,created_at`
@@ -24,13 +39,13 @@ func (p *conversationRepo) SaveMessage(ctx context.Context, d *r.Inbox) (err err
 	return
 }
 
-func (p *conversationRepo) GetMessages(ctx context.Context, id int,page int,size int) (res []r.Inbox, err error) {
+func (p *conversationRepo) GetMessages(ctx context.Context, id int,page int16,size int8) (res []r.Inbox, err error) {
 	query := `select u.id,u.conversation_id,u.sender_id,u.content,u.created_at,u.reply_to,
 	gm.id,gm.conversation_id,gm.sender_id,gm.content,gm.created_at
 	from conversation_message as u
     left join conversation_message as gm on gm.id = u.reply_to
 	where u.conversation_id = $1 order by u.created_at desc limit $2 offset $3`
-	res, err = p.fetchConversationMessages(ctx, query, id, size, page*size)
+	res, err = p.fetchConversationMessages(ctx, query, id, size, page*int16(size))
 	return
 }
 func (p *conversationRepo)GetConversations(ctx context.Context,id int)(res []r.Conversation,err error){
