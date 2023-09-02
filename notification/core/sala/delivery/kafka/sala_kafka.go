@@ -2,7 +2,7 @@ package kafka
 
 import (
 	"context"
-	"fmt"
+	// "fmt"
 	"log"
 	r "notification/domain/repository"
 
@@ -32,8 +32,8 @@ func (k *SalaKafkaHander) SalaReservationConflictConsumer() {
 		if err != nil {
 			break
 		}
-		log.Println("RUNNN")
-		fmt.Printf("message at offset %d: %s = %s\n %s", m.Offset, string(m.Key), string(m.Value), m.Time.Local().String())
+		// log.Println("RUNNN")
+		// fmt.Printf("message at offset %d: %s = %s\n %s", m.Offset, string(m.Key), string(m.Value), m.Time.Local().String())
 		err = k.salaU.SalaReservationConflict(context.TODO(), m.Value)
 		log.Println(err)
 	}
@@ -56,8 +56,8 @@ func (k *SalaKafkaHander) SalaHasBennReservedConsumer() {
 		if err != nil {
 			break
 		}
-		log.Println("RUNNN")
-		fmt.Printf("message at offset %d: %s = %s\n %s", m.Offset, string(m.Key), string(m.Value), m.Time.Local().String())
+		// log.Println("RUNNN")
+		// fmt.Printf("message at offset %d: %s = %s\n %s", m.Offset, string(m.Key), string(m.Value), m.Time.Local().String())
 		err = k.salaU.SalaHasBennReserved(context.TODO(), m.Value)
 		log.Println(err)
 	}

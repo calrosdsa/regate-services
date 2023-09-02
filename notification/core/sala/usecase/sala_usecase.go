@@ -43,7 +43,7 @@ func (u *salaUseCase) SalaHasBennReserved(ctx context.Context,d []byte) (err err
 		Message:  "La reserva para la sala se ha completado. ¡Prepárate para jugar!",
 		EntityId: data.Id,
 	}
-	log.Println(message)
+	// log.Println(message)
 	err = u.SendNotificationUsersSala(ctx,message,r.NotificationSalaHasBeenReserved)
 	if err != nil {
 		log.Println("ERROR",err)
@@ -61,19 +61,41 @@ func (u *salaUseCase) SalaReservationConflict(ctx context.Context,d []byte) (err
 	log.Println("IDDDDDD",data.SalaIds)
 	for _, val := range data.SalaIds {
 		log.Println("IDDDDDD",val.Id)
-		message := r.MessageNotification{
-			Message:  "Lamentamos informarte que alguien más ha reservado la cancha que habías seleccionado para la sala.",
-			EntityId: val.Id,
-		}
-		err = u.SendNotificationUsersSala2(ctx,message,r.NotificationSalaReservationConflict)
-		if err != nil {
-			log.Println("ERROR",err)
+		// message := r.MessageNotification{
+		// 	Message:  "Lamentamos informarte que alguien más ha reservado la cancha que habías seleccionado para la sala.",
+		// 	EntityId: val.Id,
+		// }
+		horario,err := u.salaRepo.GetSalaReservaHora(ctx,val.Id)
+		horario.Id = val.Id
+		horario.Message = "¡No te quedes sin jugar! Tenemos más canchas disponibles."
+		if err == nil {
+			err = u.SendNotificationUsersSala2(ctx,horario,r.NotificationSalaReservationConflict)
+			if err != nil {
+				log.Println("ERROR",err)
+			}
 		}
 		// err = u.salaRepo.DeleteSala(ctx,val.Id)
 		// if err != nil{
 		// 	log.Println()
 		// 	return 
 		// }
+	}
+	return
+}
+func (u *salaUseCase) SendNotificationUsersSala2(ctx context.Context,message r.SalaHora,
+	notification  r.NotificationType) (err error) {
+	ctx, cancel := context.WithTimeout(ctx, u.timeout)
+	defer cancel()
+	res, err := u.salaRepo.GetFcmTokensUserSalasSala(ctx, message.Id)
+	log.Println("SALA HORA-------",message)
+	if err != nil {
+		log.Println("FAILT TO FETCG TOKENS",err)
+		return
+	}
+	data, err := json.Marshal(message)
+	for _, val := range res {
+		log.Println("FCM_TOKENS", val.FcmToken)
+		u.utilU.SendNotification(ctx, val.FcmToken, data,notification, u.firebase)
 	}
 	return
 }
@@ -97,23 +119,6 @@ func (u *salaUseCase) SendNotificationUsersSala(ctx context.Context,message r.Me
 	}
 	data, err := json.Marshal(message)
 	for _, val := range res {
-		u.utilU.SendNotification(ctx, val.FcmToken, data,notification, u.firebase)
-	}
-	return
-}
-
-func (u *salaUseCase) SendNotificationUsersSala2(ctx context.Context,message r.MessageNotification,
-	notification  r.NotificationType) (err error) {
-	ctx, cancel := context.WithTimeout(ctx, u.timeout)
-	defer cancel()
-	res, err := u.salaRepo.GetFcmTokensUserSalasSala(ctx, message.EntityId)
-	if err != nil {
-		log.Println("FAILT TO FETCG TOKENS",err)
-		return
-	}
-	data, err := json.Marshal(message)
-	for _, val := range res {
-		log.Println("FCM_TOKENS", val.FcmToken)
 		u.utilU.SendNotification(ctx, val.FcmToken, data,notification, u.firebase)
 	}
 	return

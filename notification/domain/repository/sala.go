@@ -37,6 +37,14 @@ type SalaUseCase interface {
 type SalaRepository interface {
 	GetFcmTokensUserSalasSala(ctx context.Context, salaId int) ([]UserSalaFcmToken, error)
 	DeleteSala(ctx context.Context, salaId int) (err error)
+	GetSalaReservaHora(ctx context.Context, id int) (res SalaHora, err error)
+}
+
+type SalaHora struct {
+	Id        int      `json:"id"`
+	Horas     []string `json:"horas"`
+	CreatedAt string   `json:"created_at"`
+	Message   string   `json:"message"`
 }
 
 type UserSalaFcmToken struct {
