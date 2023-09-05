@@ -20,7 +20,7 @@ func NewRepository(sql *sql.DB) r.GrupoRepository {
 
 func (p grupoRepository) GetLastMessagesFromGroup(ctx context.Context, id int) (res []r.MessageGroupPayload, err error) {
 	query := `select m.id,m.grupo_id,m.content,m.created_at,p.nombre,p.apellido,p.profile_photo
-	 from grupo_messages as m inner join profiles as p on p.profile_id = m.profile_id
+	 from grupo_message as m inner join profiles as p on p.profile_id = m.profile_id
 	where grupo_id = $1
 	order by created_at desc limit 3`
 	res, err = p.fetchMessagesGrupo(ctx, query, id)
