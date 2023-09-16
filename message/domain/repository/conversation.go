@@ -4,7 +4,7 @@ import "context"
 
 type EstablecimientoConversation struct {
 	Name           string  `json:"name"`
-	Apellido       string  `json:"apellido"`
+	Apellido       *string  `json:"apellido"`
 	Photo          *string `json:"photo"`
 	ConversationId int     `json:"conversation_id"`
 	ProfileId      int     `json:"profile_id"`
