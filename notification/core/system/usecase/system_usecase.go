@@ -45,7 +45,7 @@ func (u *billingUCase) SendNotificationUserBilling(ctx context.Context,d []byte)
 	log.Println("DATA ---------",data)
 	fcm_token,err := u.utilU.GetProfileFcmToken(ctx,data.EntityId)
 	if err != nil{
-		log.Println("FAIL TO SEND MESSAGE",err)
+		log.Println(err)
 	}else{
 		u.utilU.SendNotification(ctx,fcm_token,d,r.NotificationBilling,u.firebase)
 	}

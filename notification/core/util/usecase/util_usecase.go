@@ -50,7 +50,7 @@ func (u *utilUseCase) SendNotification(ctx context.Context, tokens string, data 
 
 	response, err := client.Send(ctx, message)
 	if err != nil {
-		log.Println(err)
+		log.Println("fail to send message",err)
 	}
 	log.Println("Successfully sent message:", response)
 }
@@ -76,7 +76,8 @@ func (u *utilUseCase) SendNotificationMessage(ctx context.Context, tokens string
 
 	response, err := client.Send(ctx, message)
 	if err != nil {
-		log.Println(err)
+		log.Println("FAIL TO SEND",err)
+	} else {
+		log.Println("Successfully sent message:", response)
 	}
-	log.Println("Successfully sent message:", response)
 }

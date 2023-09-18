@@ -8,12 +8,6 @@ type SalaPayload struct {
 	GrupoId int    `json:"grupo_id"`
 }
 
-type MessageNotification struct {
-	// Title    string `json:"title"`
-	Message  string `json:"message"`
-	EntityId int    `json:"id"`
-}
-
 type SalaConflictData struct {
 	SalaIds []Ids `json:"sala_ids"`
 }
