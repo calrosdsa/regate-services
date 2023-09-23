@@ -64,6 +64,7 @@ func (u *grupoUcase) SendNotificationToUsersGroup(ctx context.Context, message [
 	if err != nil {
 		return
 	}
+	log.Println(string(byteMessages))
 	// tokens := make([]string, len(fcm_tokens))
 	for _, val := range fcm_tokens {
 		// tokens = append(tokens, val.FcmToken)
