@@ -65,9 +65,9 @@ func SetupFirebase() (*firebase.App, context.Context, *messaging.Client) {
 
 	ctx := context.Background()
 
-	serviceAccountKeyFilePath, err := filepath.Abs("./serviceAccountKey.json")
+	serviceAccountKeyFilePath, err := filepath.Abs(fmt.Sprintf("%s/serviceAccountKey.json",viper.GetString("config.path")))
 	if err != nil {
-		panic("Unable to load serviceAccountKeys.json file")
+		log.Println("Unable to load serviceAccountKeys.json file")
 	}
 
 	opt := option.WithCredentialsFile(serviceAccountKeyFilePath)
@@ -75,7 +75,7 @@ func SetupFirebase() (*firebase.App, context.Context, *messaging.Client) {
 	//Firebase admin SDK initialization
 	app, err := firebase.NewApp(context.Background(), nil, opt)
 	if err != nil {
-		panic("Firebase load error")
+		log.Println("Firebase load error")
 	}
 
 	//Messaging client
