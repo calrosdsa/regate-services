@@ -56,8 +56,6 @@ func main() {
 	defer db.Close()
 	app, _, _ := SetupFirebase()
 	core.Init(db, app)
-	
-	
 }
 
 
@@ -65,7 +63,7 @@ func SetupFirebase() (*firebase.App, context.Context, *messaging.Client) {
 
 	ctx := context.Background()
 
-	serviceAccountKeyFilePath, err := filepath.Abs(fmt.Sprintf("%s/serviceAccountKey.json",viper.GetString("config.path")))
+	serviceAccountKeyFilePath, err := filepath.Abs(fmt.Sprintf("%s/serviceAccountKey.json",viper.GetString("path")))
 	if err != nil {
 		log.Println("Unable to load serviceAccountKeys.json file")
 	}
