@@ -30,21 +30,17 @@ func NewUseCase(salaRepo r.SalaRepository, firebase *firebase.App, timeout time.
 	}
 }
 
-func (u *salaUseCase) SalaHasBennReserved(ctx context.Context,d []byte) (err error) {
+func (u *salaUseCase) SalaSendNotification(ctx context.Context,d []byte) (err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.timeout)
 	defer cancel()
-	var data r.Sala
+	var data r.MessageNotification
 	err = json.Unmarshal(d, &data)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	message := r.MessageNotification{
-		Message:  "La reserva para la sala se ha completado. ¡Prepárate para jugar!",
-		EntityId: data.Id,
-	}
 	// log.Println(message)
-	err = u.SendNotificationUsersSala(ctx,message,r.NotificationSalaHasBeenReserved)
+	err = u.SendNotificationUsersSala(ctx,data,r.NotificationSalaHasBeenReserved)
 	if err != nil {
 		log.Println("ERROR",err)
 	}

@@ -7,6 +7,7 @@ import (
 	"notification/domain/repository"
 
 	"github.com/segmentio/kafka-go"
+	"github.com/spf13/viper"
 )
 
 type GrupoKafkaHandler struct {
@@ -22,7 +23,7 @@ func NewKafkaHandler(grupoUcase repository.GrupoUseCase) GrupoKafkaHandler {
 
 func (k *GrupoKafkaHandler) SalaCreationConsumer() {
 	r := kafka.NewReader(kafka.ReaderConfig{
-		Brokers:   []string{"localhost:9094"},
+		Brokers:   []string{viper.GetString("kafka.host")},
 		Topic:     "sala-creation-group",
 		GroupID:   "consumer-group-sala-creation",
 		Partition: 0,
@@ -50,7 +51,7 @@ func (k *GrupoKafkaHandler) SalaCreationConsumer() {
 
 func (k *GrupoKafkaHandler) MessageGroupConsumer() {
 	r := kafka.NewReader(kafka.ReaderConfig{
-		Brokers:   []string{"localhost:9094"},
+		Brokers:   []string{viper.GetString("kafka.host")},
 		Topic:     "notification-message-group",
 		GroupID:   "consumer-group-messages",
 		Partition: 0,

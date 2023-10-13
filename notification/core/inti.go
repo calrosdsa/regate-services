@@ -35,12 +35,10 @@ func Init(db *sql.DB, firebase *_firebase.App) {
 	timeout := time.Duration(5) * time.Second
 
 	utilR := _utilRepo.NewRepo(db)
-	utilU := _utilUcase.NewUseCase(timeout,utilR)
+	utilU := _utilUcase.NewUseCase(timeout, utilR)
 
-
-	
 	billingR := _billingRepo.NewRepository(db)
-	billingU := _billingUcase.NewUseCase(firebase, timeout, utilU,billingR)
+	billingU := _billingUcase.NewUseCase(firebase, timeout, utilU, billingR)
 	billinKafka := _billingKafka.NewKafkaHandler(billingU)
 
 	grupoRepo := _messageRepo.NewRepository(db)
@@ -49,14 +47,13 @@ func Init(db *sql.DB, firebase *_firebase.App) {
 	grupoKafka := _messageKafka.NewKafkaHandler(grupoUcase)
 
 	salaRepo := _salaRepo.NewRepository(db)
-	salaUseCase := _salaUcase.NewUseCase(salaRepo, firebase, timeout, utilU,billingR)
+	salaUseCase := _salaUcase.NewUseCase(salaRepo, firebase, timeout, utilU, billingR)
 	salaKafka := _salaKafka.NewKafkaHandler(salaUseCase)
-
 
 	go salaKafka.SalaReservationConflictConsumer()
 	go grupoKafka.MessageGroupConsumer()
 	go grupoKafka.SalaCreationConsumer()
-	go salaKafka.SalaHasBennReservedConsumer()
+	go salaKafka.SalaConsumer()
 	go billinKafka.BillingNotificationConsumer()
 
 	quitChannel := make(chan os.Signal, 1)

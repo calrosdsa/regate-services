@@ -7,6 +7,7 @@ import (
 	r "notification/domain/repository"
 
 	"github.com/segmentio/kafka-go"
+	"github.com/spf13/viper"
 )
 
 type BillingHandler struct {
@@ -21,7 +22,7 @@ func NewKafkaHandler(billingU r.BillingUseCase) BillingHandler {
 
 func (k *BillingHandler) BillingNotificationConsumer() {
 	r := kafka.NewReader(kafka.ReaderConfig{	
-		Brokers:   []string{"localhost:9094"},
+		Brokers:   []string{viper.GetString("kafka.host")},
 		Topic:     "billing-user",
 		GroupID:   "consumer-group-billing-user",
 		Partition: 0,

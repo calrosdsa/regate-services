@@ -7,6 +7,7 @@ import (
 	r "notification/domain/repository"
 
 	"github.com/segmentio/kafka-go"
+	"github.com/spf13/viper"
 )
 
 type SalaKafkaHander struct {
@@ -20,8 +21,8 @@ func NewKafkaHandler(salaU r.SalaUseCase) SalaKafkaHander {
 }
 
 func (k *SalaKafkaHander) SalaReservationConflictConsumer() {
-	r := kafka.NewReader(kafka.ReaderConfig{	
-		Brokers:   []string{"localhost:9094"},
+	r := kafka.NewReader(kafka.ReaderConfig{
+		Brokers:   []string{viper.GetString("kafka.host")},
 		Topic:     "sala-reservation-conflict",
 		GroupID:   "consumer-group-sala-reservation-conflict",
 		Partition: 0,
@@ -43,11 +44,11 @@ func (k *SalaKafkaHander) SalaReservationConflictConsumer() {
 	}
 }
 
-func (k *SalaKafkaHander) SalaHasBennReservedConsumer() {
-	r := kafka.NewReader(kafka.ReaderConfig{	
-		Brokers:   []string{"localhost:9094"},
-		Topic:     "sala-has-been-reserved",
-		GroupID:   "consumer-group-sala-has-been-reserved",
+func (k *SalaKafkaHander) SalaConsumer() {
+	r := kafka.NewReader(kafka.ReaderConfig{
+		Brokers:   []string{viper.GetString("kafka.host")},
+		Topic:     "sala",
+		GroupID:   "consumer-group-sala",
 		Partition: 0,
 		MaxBytes:  10e6, // 10MB
 	})
@@ -58,10 +59,9 @@ func (k *SalaKafkaHander) SalaHasBennReservedConsumer() {
 		}
 		// log.Println("RUNNN")
 		// fmt.Printf("message at offset %d: %s = %s\n %s", m.Offset, string(m.Key), string(m.Value), m.Time.Local().String())
-		err = k.salaU.SalaHasBennReserved(context.TODO(), m.Value)
+		err = k.salaU.SalaSendNotification(context.TODO(), m.Value)
 		log.Println(err)
 	}
-
 	if err := r.Close(); err != nil {
 		log.Fatal("failed to close reader:", err)
 	}

@@ -25,7 +25,7 @@ type SalaUseCase interface {
 	//Para notificar que la cancha que querian notificar ya fue reservada por otro
 	SalaReservationConflict(ctx context.Context, d []byte) (err error)
 	SendNotificationUsersSala(ctx context.Context, message MessageNotification, notification NotificationType) (err error)
-	SalaHasBennReserved(ctx context.Context, d []byte) (err error)
+	SalaSendNotification(ctx context.Context, d []byte) (err error)
 }
 
 type SalaRepository interface {
