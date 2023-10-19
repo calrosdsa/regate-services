@@ -54,9 +54,9 @@ func (u *salaUseCase) SalaReservationConflict(ctx context.Context,d []byte) (err
 		log.Println(err)
 		return
 	}
-	log.Println("IDDDDDD",data.SalaIds)
+	// log.Println("IDDDDDD",data.SalaIds)
 	for _, val := range data.SalaIds {
-		log.Println("IDDDDDD",val.Id)
+		// log.Println("IDDDDDD",val.Id)
 		// message := r.MessageNotification{
 		// 	Message:  "Lamentamos informarte que alguien más ha reservado la cancha que habías seleccionado para la sala.",
 		// 	EntityId: val.Id,
