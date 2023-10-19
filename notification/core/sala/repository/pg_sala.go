@@ -39,7 +39,7 @@ func (p *salaRepo) DeleteSala(ctx context.Context,salaId int)(err error){
 
 func (p *salaRepo)GetSalaReservaHora(ctx context.Context,id int)(res r.SalaHora,err error){
 	log.Println(id)
-	query := `select created_at,horas from salas where sala_id = $1`
+	query := `select horas[1]::timestamp,horas from salas where sala_id = $1`
 	err = p.Conn.QueryRowContext(ctx,query,id).Scan(&res.CreatedAt,pq.Array(&res.Horas))
 	if err!= nil {
 		log.Println(err,"ERROR-SALA")
