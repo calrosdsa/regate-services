@@ -14,11 +14,11 @@ import (
 type GrupoWsHandler struct {
 }
 
-func NewWsHandler(e *echo.Echo,grupoUseCase r.GrupoUseCase){
-	go H.Run(grupoUseCase)
+func NewWsHandler(e *echo.Echo,conversationUseCase r.ConversationUseCase){
+	go H.Run(conversationUseCase)
 	handler :=GrupoWsHandler{
 	}
-	e.GET("v1/ws/chat-grupo",handler.ChatGrupo)
+	e.GET("v1/ws/conversation/",handler.ChatGrupo)
 }
 
 func (ws *GrupoWsHandler) ChatGrupo(c echo.Context) (err error) {

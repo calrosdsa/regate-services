@@ -7,9 +7,13 @@ import (
 	_conversationR "message/core/conversation/repository/pg"
 	_conversationU "message/core/conversation/usecase"
 
-	// _conversationADeliveryHttp "message/core/conversation/delivery/http"
-	// _conversationAR "message/core/conversation/repository/pg"
-	// _conversationAU "message/core/conversation/usecase"
+	_chatDeliveryHttp "message/core/chat/delivery/http"
+	_chatR "message/core/chat/repository/pg"
+	_chatU "message/core/chat/usecase"
+
+	_grupoDeliveryHttp "message/core/grupo/delivery/http"
+	_grupoR "message/core/grupo/repository/pg"
+	_grupoU "message/core/grupo/usecase"
 
 	_utilU "message/core/util/usecase"
 
@@ -29,6 +33,14 @@ func Init(db *sql.DB){
 	timeoutContext := time.Duration(5) * time.Second
 
 	utilU := _utilU.NewUseCase()
+	//Chat
+	chatR := _chatR.NewRepository(db)
+	chatU := _chatU.NewUseCase(timeoutContext,chatR,utilU)
+	_chatDeliveryHttp.NewHandler(e,chatU)
+	//Grupo
+	grupoR := _grupoR.NewRepository(db)
+	grupoU := _grupoU.NewUseCase(timeoutContext,grupoR,utilU)
+	_grupoDeliveryHttp.NewHandler(e,grupoU)
 
 	//Conversation
 	conversationR := _conversationR.NewRepository(db)
